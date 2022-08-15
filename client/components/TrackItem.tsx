@@ -4,6 +4,7 @@ import { ITrack } from '../types/track'
 import styles from '../styles/TrackItem.module.scss'
 import { useRouter } from 'next/router'
 import { Delete, Pause, PlayArrow } from '@mui/icons-material'
+import { useActions } from '../hooks/useActions'
 
 interface IProps {
   track: ITrack
@@ -12,14 +13,28 @@ interface IProps {
 
 const TrackItem: FC<IProps> = ({ track, active = false }) => {
   const router = useRouter()
+  const { playTrack, pauseTrack, setActiveTrack } = useActions()
+
+  const play = (e) => {
+    e.stopPropagation()
+    setActiveTrack(track)
+
+    playTrack()
+  }
 
   return (
     <Card
       className={styles.track}
       onClick={() => router.push('/tracks/' + track.id)}
     >
-      <IconButton>{!active ? <PlayArrow /> : <Pause />}</IconButton>
-      <img width={70} height={70} src={track.picture} />
+      <IconButton onClick={play}>
+        {!active ? <PlayArrow /> : <Pause />}
+      </IconButton>
+      <img
+        width={70}
+        height={70}
+        src={'http://localhost:5000/' + track.picture}
+      />
       <Grid
         container
         direction="column"
