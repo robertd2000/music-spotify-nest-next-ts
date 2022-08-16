@@ -1,31 +1,34 @@
-import { Button, Card, Grid } from '@mui/material'
+import { Button, Card, Grid, TextField } from '@mui/material'
 import { Box } from '@mui/system'
 import { useRouter } from 'next/router'
-import React, { memo } from 'react'
+import React, { memo, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import TrackList from '../../components/TrackList'
 import { useTypedSelector } from '../../hooks/useTypedSelector'
 import MainLayout from '../../layouts/MainLayout'
 import { NextThunkDispatch, wrapper } from '../../store'
-import { FetchTracks } from '../../store/actions/track'
+import { FetchTracks, searchTracks } from '../../store/actions/track'
 import { ITrack } from '../../types/track'
 
 const Index = () => {
   const router = useRouter()
   const { tracks, error } = useTypedSelector((state) => state.track)
-  // const tracks: ITrack[] = [
-  //   {
-  //     id: 2,
-  //     name: 'Track',
-  //     artist: 'Artist',
-  //     audio:
-  //       'http://localhost:5000/audio/3fc45cbc-83a7-49a9-9b59-ac2ea295d839.mp3',
-  //     picture:
-  //       'http://localhost:5000/image/e90ed981-73c5-4b97-8056-13b35a8fc9a2.jpg',
-  //     listens: 1,
-  //     text: 'lalalal',
-  //     comments: [],
-  //   },
-  // ]
+  const [query, setQuery] = useState<string>('')
+  const [timer, setTimer] = useState(null)
+
+  const dispatch = useDispatch() as NextThunkDispatch
+
+  const search = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value)
+    if (timer) {
+      clearTimeout(timer)
+    }
+    setTimer(
+      setTimeout(async () => {
+        await dispatch(await searchTracks(e.target.value))
+      }, 500)
+    )
+  }
 
   if (error) {
     return (
@@ -36,7 +39,7 @@ const Index = () => {
   }
 
   return (
-    <MainLayout>
+    <MainLayout title="Список треков: музыкальная платформа">
       <Grid container justifyContent="center">
         <Card style={{ width: '900px' }}>
           <Box p={3}>
@@ -47,6 +50,7 @@ const Index = () => {
               </Button>
             </Grid>
           </Box>
+          <TextField fullWidth value={query} onChange={search} />
           <TrackList tracks={tracks} />
         </Card>
       </Grid>
